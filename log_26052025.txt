@@ -1,0 +1,44 @@
+PS D:\projeto_AG> & D:/projeto_AG/venv/Scripts/python.exe d:/projeto_AG/main.py
+Usando dispositivo: cuda
+
+--- Geração 1 ---
+Acurácia: 0.1190 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1726.2s
+Acurácia: 0.1510 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1377.9s
+Acurácia: 0.0520 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 384, 'n_fc': 32, 'dropout': 0.25} | Tempo: 3951.4s
+Acurácia: 0.0560 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 16, 'dropout': 0.25} | Tempo: 1672.6s
+1: Acc = 0.1510, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+2: Acc = 0.1190, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25}
+3: Acc = 0.0560, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 16, 'dropout': 0.25}
+4: Acc = 0.0520, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 384, 'n_fc': 32, 'dropout': 0.25}
+
+--- Geração 2 ---
+Acurácia: 0.1350 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1377.6s
+Acurácia: 0.1120 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1693.6s
+Acurácia: 0.0970 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1662.4s
+Acurácia: 0.1200 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1321.8s
+1: Acc = 0.1350, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+2: Acc = 0.1200, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+3: Acc = 0.1120, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25}
+4: Acc = 0.0970, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 128, 'n_fc': 32, 'dropout': 0.25}
+
+--- Geração 3 ---
+Acurácia: 0.1300 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1198.9s
+Acurácia: 0.1450 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1211.3s
+Acurácia: 0.1350 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1202.2s
+Acurácia: 0.1300 {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25} | Tempo: 1196.0s
+1: Acc = 0.1450, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+2: Acc = 0.1350, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+3: Acc = 0.1300, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+4: Acc = 0.1300, {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+
+========== RELATÓRIO FINAL ==========
+Tempo total de execução: 25865.5 segundos
+Melhor indivíduo final: {'learning_rate': 0.001, 'batch_size': 32, 'n_filters': 64, 'n_fc': 32, 'dropout': 0.25}
+Acurácia do melhor: 0.1140
+Acurácia média (todas): 0.1152
+Acurácia máxima (histórico): 0.1510
+Acurácia mínima (histórico): 0.0520
+
+5 exemplos que o algoritmo ACERTOU:
+
+5 exemplos que o algoritmo ERROU:
