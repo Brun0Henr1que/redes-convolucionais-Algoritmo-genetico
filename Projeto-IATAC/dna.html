@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Loading</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       margin: 0;
-      background: #fff;
+      background: #f1f1f1;
       font-family: Arial, sans-serif;;
       display: flex;
       flex-direction: column;
@@ -29,7 +30,7 @@
 
     .dicas-container {
       font-size: 1.2rem;
-      color: #ff5c8a;
+      color: #4d9353;
       min-height: 1.5em;
       text-align: center;
     }
@@ -43,9 +44,12 @@
 
   <canvas id="dnaCanvas" width="300" height="300"></canvas>
   <h2>Analisando seu algoritmo genético...</h2>
-  <div><strong>Dicas:</strong></div>
-  <div class="dicas-container" id="dica"></div>
-
+  <div>
+    <span class="dicas-container"><i class="fa-solid fa-lightbulb" style="color: yellowgreen;"></i> Dicas:</span>
+    <span class="dicas-container" id="dica"></span>
+  </div>
+    
+ 
   <script>
     // DNA ANIMATION
     const canvas = document.getElementById("dnaCanvas");
@@ -121,7 +125,8 @@
     setTimeout(() => {
         clearInterval(dicasInterval);
         window.location.href = "Resultados.html";
-    }, 6000)
+    }, 8000)
+
   </script>
 
 </body>
