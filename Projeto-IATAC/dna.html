@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fff;
+      font-family: Arial, sans-serif;;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    canvas {
+      transform: rotate(140deg);
+      image-rendering: pixelated;
+      filter: contrast(1.2) saturate(1.4);
+    }
+
+    h2 {
+      margin: 20px 0 5px;
+      font-size: 1.4rem;
+      color: grey;
+    }
+
+    .dicas-container {
+      font-size: 1.2rem;
+      color: #ff5c8a;
+      min-height: 1.5em;
+      text-align: center;
+    }
+
+    strong {
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="dnaCanvas" width="300" height="300"></canvas>
+  <h2>Analisando seu algoritmo genético...</h2>
+  <div><strong>Dicas:</strong></div>
+  <div class="dicas-container" id="dica"></div>
+
+  <script>
+    // DNA ANIMATION
+    const canvas = document.getElementById("dnaCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let time = 0;
+    const centerX = canvas.width / 2;
+    const step = 10;
+    const maxPairs = canvas.height / step;
+    let drawnPairs = 0;
+
+    function drawHelix() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      time += 0.05;
+
+      for (let i = 0; i < drawnPairs; i++) {
+        const y = canvas.height - i * step;
+        const angle = time + i * 0.2;
+        const amplitude = 35;
+
+        const x1 = centerX + Math.sin(angle) * amplitude;
+        const x2 = centerX - Math.sin(angle) * amplitude;
+
+        // base pair lines (alternating color)
+        ctx.strokeStyle = i % 2 === 0 ? "#4d9353" : "#2c6d33";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+
+        // left and right side dots (cartoon colored)
+        ctx.fillStyle = "#4d9353";
+        ctx.beginPath();
+        ctx.arc(x1, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x2, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // gradual construction
+      if (drawnPairs < maxPairs) {
+        drawnPairs += 0.5;
+      }
+
+      requestAnimationFrame(drawHelix);
+    }
+
+    drawHelix();
+
+    // DICAS
+    const dicas = [
+      "Verifique sua taxa de mutação.",
+      "Use diversidade genética.",
+      "Evite elitismo excessivo.",
+      "Cuidado com o overfitting.",
+      "Experimente diferentes cruzamentos.",
+    ];
+
+    let index = 0;
+    const dicaEl = document.getElementById("dica");
+
+    function trocarDica() {
+      dicaEl.textContent = dicas[index];
+      index = (index + 1) % dicas.length;
+    }
+
+    trocarDica();
+    const dicasInterval = setInterval(trocarDica, 3000);
+
+    setTimeout(() => {
+        clearInterval(dicasInterval);
+        window.location.href = "Resultados.html";
+    }, 6000)
+  </script>
+
+</body>
+</html>
