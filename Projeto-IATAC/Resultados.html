@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AG CNN Small Image</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+  <header>
+    <h1>AG CNN SMALL IMAGE</h1>
+   <div>
+     <a ><button class="btn" title="Modo Escuro" id="toggle-dark" ><i class="fa-solid fa-moon"></i></button></a>
+     <a href="Home.html"><button class="btn"  title="Calculadora"> <i class="fa-solid fa-calculator"></i></button></a>
+   </div>
+  </header>
+
+  <main>
+    <div class="stat-cards">
+        <div class="stat"><h2>64</h2><p>Nº DA ÚLTIMA GERAÇÃO</p></div>
+        <div class="stat"><h2>88,3</h2><p>FITNESS</p></div>
+        <div class="stat"><h2>88,4</h2><p>MÉDIA DE GERAÇÕES</p></div>
+        <div class="stat"><h2>00:00:30</h2><p>MELHOR TEMPO</p></div>
+        <div class="stat"><h2>0,0005</h2><p>ACURÁCIA</p></div>
+  </div>
+  <br>
+  <div class="history-section">
+    <div class="card">
+      <h3 class="images-title">HISTÓRICO DE CONFIGURAÇÕES</h3>
+      <div class="table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>TARGET</th>
+              <th>POP SIZE</th>
+              <th>GENERATIONS</th>
+              <th>MUTATION RATE</th>
+              <th>CHARS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Exemplo de linha -->
+            <tr>
+              <td>ABC123</td>
+              <td>100</td>
+              <td>50</td>
+              <td>0.02</td>
+              <td>X, Y, Z</td>
+            </tr>
+            <!-- Duplicar conforme necessário -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="container-grafico">
+    <div class="card-grafico">
+        <div id="myPlot" style="width:50%; min-width: 400px;"></div>
+        <div id="myPlot2" style="width:50%; min-width: 400px;"></div>
+    </div>
+  </div>
+  <div class="container-example">
+    <div class="card">
+        <div class="images-section">
+            <h3 class="images-title">5 EXEMPLOS QUE O ALGORITMO ACERTOU</h3>
+            <div class="images-group">
+                <div class="image-container">
+                    <div class="image-box"></div>
+                    <div class="legend-box">
+                        <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                        <p class="legend-box-true"><strong>True: 80%</strong></p>
+                    </div>
+                </div>
+                 <div class="image-container">
+                    <div class="image-box"></div>
+                    <div class="legend-box">
+                        <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                        <p class="legend-box-true"><strong>True: 80%</strong></p>
+                    </div>
+                </div>
+                 <div class="image-container">
+                    <div class="image-box"></div>
+                    <div class="legend-box">
+                        <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                        <p class="legend-box-true"><strong>True: 80%</strong></p>
+                    </div>
+                </div>
+                 <div class="image-container">
+                    <div class="image-box"></div>
+                    <div class="legend-box">
+                        <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                        <p class="legend-box-true"><strong>True: 80%</strong></p>
+                    </div>
+                </div>
+                 <div class="image-container">
+                    <div class="image-box"></div>
+                    <div class="legend-box">
+                        <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                        <p class="legend-box-true"><strong>True: 80%</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <h3 class="images-title error">5 EXEMPLOS QUE O ALGORITMO ERROU</h3>
+        <div class="images-group">
+            <div class="image-container">
+                <div class="image-box"></div>
+                <div class="legend-box">
+                    <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                    <p class="legend-box-false"><strong>True: 80%</strong></p>
+                </div>
+            </div>
+            <div class="image-container">
+                <div class="image-box"></div>
+                <div class="legend-box">
+                    <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                    <p class="legend-box-false"><strong>True: 80%</strong></p>
+                </div>
+            </div>
+            <div class="image-container">
+                <div class="image-box"></div>
+                <div class="legend-box">
+                    <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                    <p class="legend-box-false"><strong>True: 80%</strong></p>
+                </div>
+            </div>
+            <div class="image-container">
+                <div class="image-box"></div>
+                <div class="legend-box">
+                    <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                    <p class="legend-box-false"><strong>True: 80%</strong></p>
+                </div>
+            </div>
+            <div class="image-container">
+                <div class="image-box"></div>
+                <div class="legend-box">
+                    <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
+                    <p class="legend-box-false"><strong>True: 80%</strong></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+  </div>
+</main>
+
+
+  <script>
+    // Script para abrir/fechar accordion
+    document.querySelectorAll('.accordion-title').forEach(title => {
+      title.addEventListener('click', () => {
+        const isActive = title.classList.contains('active');
+        document.querySelectorAll('.accordion-title').forEach(t => t.classList.remove('active'));
+        if (!isActive) {
+          title.classList.add('active');
+        }
+      });
+    });
+
+    // Prevenir submit do form para exemplo
+    document.getElementById('configForm').addEventListener('submit', e => {
+      e.preventDefault();
+      alert('Função calcular ainda não implementada.');
+    });
+
+  </script>
+ <script>
+  // Gráfico de linhas
+  const xArray = [50,60,70,80,90,100,110,120,130,140,150];
+  const yArray = [7,8,8,9,9,9,10,11,14,14,15];
+
+  const data = [{
+    x: xArray,
+    y: yArray,
+    mode: "lines",
+    line: { color: "#4d9353" }
+  }];
+
+  const layout = {
+    xaxis: { range: [40, 160], title: "Square Meters" },
+    yaxis: { range: [5, 16], title: "Price in Millions" },
+    title: "House Prices vs. Size",
+    plot_bgcolor: "#ffffff",
+    paper_bgcolor: "#ffffff",
+    font: { color: "#000000" }
+  };
+
+  Plotly.newPlot("myPlot", data, layout);
+</script>
+
+<script>
+  // Gráfico de pizza
+  const xArray2 = ["Italy", "France", "Spain", "USA", "Argentina"];
+  const yArray2 = [55, 49, 44, 24, 15];
+
+  const data2 = [{
+    labels: xArray2,
+    values: yArray2,
+    hole: .4,
+    type: "pie"
+  }];
+
+  const layout2 = {
+    title: "World Wide Wine Production",
+    plot_bgcolor: "#ffffff",
+    paper_bgcolor: "#ffffff",
+    font: { color: "#000000" }
+  };
+
+  Plotly.newPlot("myPlot2", data2, layout2);
+</script>
+
+<!-- Script de alternância de tema com sessionStorage -->
+<script>
+  const btn = document.getElementById('toggle-dark');
+
+  function updatePlotThemes(isDark) {
+    const bgColor = isDark ? "#1e1e1e" : "#ffffff";
+    const textColor = isDark ? "#ffffff" : "#000000";
+
+    const updatedLayout = {
+      plot_bgcolor: bgColor,
+      paper_bgcolor: bgColor,
+      font: { color: textColor }
+    };
+
+    Plotly.relayout("myPlot", updatedLayout);
+    Plotly.relayout("myPlot2", updatedLayout);
+  }
+
+  // Aplica o tema salvo no sessionStorage
+  if (sessionStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+    updatePlotThemes(true);
+  }
+
+  // Alternância do botão
+  btn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    sessionStorage.setItem('darkMode', isDark);
+    updatePlotThemes(isDark);
+  });
+</script>
+
+
+</body>
+</html>
