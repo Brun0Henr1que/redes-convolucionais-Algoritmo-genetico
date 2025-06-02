@@ -83,8 +83,8 @@ def crossover(pai1, pai2):
 
 def avaliar_fitness(individuo, device, save_preds=False):
     # DataLoaders
-    train_loader = DataLoader(trainset, batch_size=individuo["batch_size"], shuffle=True, num_workers=5, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
-    val_loader = DataLoader(valset, batch_size=individuo["batch_size"], shuffle=False, num_workers=5, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
+    train_loader = DataLoader(trainset, batch_size=individuo["batch_size"], shuffle=True, num_workers=2, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
+    val_loader = DataLoader(valset, batch_size=individuo["batch_size"], shuffle=False, num_workers=2, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
  
     # Modelo, loss, optimizer
     model = SmallCNN(
