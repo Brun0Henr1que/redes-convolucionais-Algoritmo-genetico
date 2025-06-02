@@ -36,11 +36,11 @@ def load_data():
 
     train_subset = Subset(
         datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train),
-        train_idx[:20000] # 20000 imagens de treino
+        train_idx[:30000] # 30000 imagens de treino
     )
     val_subset = Subset(
         full_train_dataset,
-        val_idx[:2000] # 2000 imagens de teste
+        val_idx[:10000] # 10000 imagens de teste
     )
 
     # Para mostrar imagens depois
