@@ -1,17 +1,3 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, Subset
-from sklearn.model_selection import train_test_split
-import random
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from class_CNN import SmallCNN
-import warnings
-warnings.filterwarnings("ignore", message=".*does not have many workers.*")
-
 # ========================
 # 1. Espaço de Hiperparâmetros
 # ========================
@@ -28,6 +14,7 @@ space = {
 # 2. Dataset CIFAR-100
 # ========================
 def load_data():
+    # Aplicando data augmentation
     transform_train = transforms.Compose([
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(32, padding=4),
@@ -49,11 +36,11 @@ def load_data():
 
     train_subset = Subset(
         datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train),
-        train_idx[:15000]
+        train_idx[:20000] # 20000 imagens de treino
     )
     val_subset = Subset(
         full_train_dataset,
-        val_idx[:2000]
+        val_idx[:2000] # 2000 imagens de teste
     )
 
     # Para mostrar imagens depois
@@ -81,12 +68,30 @@ def crossover(pai1, pai2):
         filho[key] = random.choice([pai1[key], pai2[key]])
     return filho
 
-def avaliar_fitness(individuo, device, save_preds=False):
-    # DataLoaders
-    train_loader = DataLoader(trainset, batch_size=individuo["batch_size"], shuffle=True, num_workers=2, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
-    val_loader = DataLoader(valset, batch_size=individuo["batch_size"], shuffle=False, num_workers=2, pin_memory=True if device == 'cuda:0' else 'cpu', persistent_workers=True)
- 
-    # Modelo, loss, optimizer
+def avaliar_fitness(individuo, device):
+    # Dataloaders
+    batch_size = individuo["batch_size"]
+    pin_mem = True if device.startswith('cuda') else False # copia os valores para a memória da GPU
+
+    train_loader = DataLoader(
+        trainset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=8, # 8 workers para carregar as 20000 imagens
+        pin_memory=pin_mem,
+        persistent_workers=True
+    )
+
+    val_loader = DataLoader(
+        valset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=2, # 2 workers para as 2000 imagens
+        pin_memory=pin_mem,
+        persistent_workers=True
+    )
+
+    # Instanciando o modelo
     model = SmallCNN(
         n_filters=individuo["n_filters"],
         n_fc=individuo["n_fc"],
@@ -95,61 +100,94 @@ def avaliar_fitness(individuo, device, save_preds=False):
     ).to(device)
 
     model.build(device)
+
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=individuo["learning_rate"], weight_decay=individuo["weight_decay"])
-    # optimizer = torch.optim.SGD(model.parameters(), lr=individuo["learning_rate"], momentum=0.9, weight_decay=individuo["weight_decay"])
 
+    # Ainda em dúvida se mantenho o ADAM ou substituo pelo SGD
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=individuo["learning_rate"],
+        weight_decay=individuo["weight_decay"]
+    )
 
-    # Treinamento curto (1 época)
-    model.train()
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
+    # Scheduler que reduz learning rate se a acurácia não melhorar
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode='max',
+        factor=0.5,
+        patience=3
+    )
 
+    # Parâmetros de treinamento
+    num_epochs = 120                 # 120 épocas de treinamento para cada indivíduo
+    val_interval = 20                # validar a cada 20 épocas
     melhor_acc = 0.0
-    # paciência do early stopping deve estar sincronizada com a validação a cada n épocas.
-    patience = 5
+    val_acc = 0.0
+    patience = 4                     # paciência de 4 validações sem melhora
     patience_counter = 0
+    stop_training = False
 
-    for epoch in range(120):
+    # Treinamento
+    for epoch in range(1, num_epochs + 1):
+        model.train()
+        epoch_loss = 0.0
+        total_train = 0
+
         for xb, yb in train_loader:
-            xb, yb = xb.to(device), yb.to(device)
+            xb = xb.to(device)
+            yb = yb.to(device)
+
             optimizer.zero_grad()
-            pred = model(xb)
-            loss = criterion(pred, yb)
+            logits = model(xb)
+            loss = criterion(logits, yb)
             loss.backward()
             optimizer.step()
 
-        # Validação a cada 10 épocas
-        if epoch % 20 == 0:
-          model.eval()
-          correct, total = 0, 0
-          all_preds, all_labels = [], []
-          with torch.no_grad():
-              for xb, yb in val_loader:
-                  xb, yb = xb.to(device), yb.to(device)
-                  pred = model(xb)
-                  _, predicted = torch.max(pred, 1)
-                  all_preds.extend(predicted.cpu().numpy())
-                  all_labels.extend(yb.cpu().numpy())
-                  total += yb.size(0)
-                  correct += (predicted == yb).sum().item()
-          acc = correct / total
-          scheduler.step(acc)
-          print(f"    ----Época {epoch+1}/{120}, Val Acc: {acc:.4f}")
+            epoch_loss += loss.item() * xb.size(0)
+            total_train += xb.size(0)
 
-          if acc > melhor_acc:
-            melhor_acc = acc
-            patience_counter = 0
-            torch.save(model.state_dict(), "melhor_modelo.pt")
-          else:
-            patience_counter += 1
-            if patience_counter >= patience:
-              print(f"Early stopping na época {epoch+1}")
-              break
-    model.load_state_dict(torch.load("melhor_modelo.pt"))
-    if save_preds:
-        return acc, np.array(all_preds), np.array(all_labels)
-    return acc
+        avg_train_loss = epoch_loss / total_train
+        print(f"Época {epoch:03d}/{num_epochs} — Loss Treino: {avg_train_loss:.4f}") # Computando o loss (função de perda) por época
+
+        # Validação do early stopping
+        if epoch % val_interval == 0:
+            model.eval()
+            correct = 0
+            total = 0
+
+            with torch.no_grad():
+                for xb_val, yb_val in val_loader:
+                    xb_val = xb_val.to(device)
+                    yb_val = yb_val.to(device)
+                    logits_val = model(xb_val)
+                    _, preds = torch.max(logits_val, dim=1)
+                    correct += (preds == yb_val).sum().item()
+                    total += yb_val.size(0)
+
+            val_acc = correct / total
+            print(f"    → Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}")
+
+            # Ajusta o scheduler com base na acurácia de validação
+            scheduler.step(val_acc)
+
+            # Early Stopping & Salvamento do Melhor Modelo
+            if val_acc > melhor_acc:
+                melhor_acc = val_acc
+                patience_counter = 0
+                torch.save(model.state_dict(), "melhor_modelo.pt")
+                print(f"    >>> Novo melhor modelo salvo! Val Acc: {melhor_acc:.4f}")
+            else:
+                patience_counter += 1
+                print(f"    (Sem melhora: patience_counter = {patience_counter}/{patience})")
+
+                if patience_counter >= patience:
+                    print(f"\nEarly stopping acionado na época {epoch}.")
+                    stop_training = True
+
+        if stop_training:
+            break
+
+    return val_acc
 
 # ========================
 # 5. AG Modular com Coleta de Estatísticas
@@ -180,11 +218,12 @@ def algoritmo_genetico(pop_size=4, geracoes=3, taxa_mutacao=0.3, device='cpu'):
         print(f"\n--- Geração {g+1}/{geracoes} ---")
         fitness = []
         for ind in populacao:
+            print(f'Indivíduo: {ind}')
             start = time.time()
             acc = avaliar_fitness(ind, device)
             elapsed = time.time() - start
             fitness.append(acc)
-            print(f"Acurácia: {acc:.4f} {ind} | Tempo: {elapsed:.1f}s")
+            print(f"Acurácia: {acc:.4f} | Tempo: {elapsed:.1f}s")
 
         # Salva histórico dos 4 melhores da geração
         melhores = sorted(zip(populacao, fitness), key=lambda x: x[1], reverse=True)
@@ -262,9 +301,22 @@ def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
 # ========================
 # 7. Execução Modular e Relatório
 # ========================
-import warnings
-warnings.filterwarnings("ignore", message="This DataLoader will create 5 worker processes*")
 if __name__ == '__main__':
+
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    from torchvision import datasets, transforms
+    from torch.utils.data import DataLoader, Subset
+    from sklearn.model_selection import train_test_split
+    import random
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import time
+    from class_CNN import SmallCNN
+    import warnings
+    warnings.filterwarnings("ignore", message=".*does not have many workers.*")
+
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     print(f"Usando dispositivo: {device}")
     melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
