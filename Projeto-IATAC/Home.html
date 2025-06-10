@@ -49,8 +49,12 @@
           <input type="text" id="mutationRate" name="mutationRate" />
         </div>
         <div class="input-group">
-          <label for="chars">CHARS</label>
-          <input type="text" id="chars" name="chars" />
+          <label for="dropout">DROPOUT</label>
+          <input type="text" id="dropout" name="dropout" />
+        </div>
+        <div class="input-group">
+          <label for="weightDecay">WEIGHT DECAY</label>
+          <input type="text" id="weightDecay" name="weightDecay" />
         </div>
         <button class="calculate-btn" type="submit">CALCULAR</button>
       </form>
@@ -61,7 +65,7 @@
       <div class="accordion">
         <div class="accordion-item">
           <div class="accordion-title">ALGORITMO GENÉTICO <span class="accordion-icon">▶</span></div>
-          <div class="accordion-content">Taxa de aprendizado define o quanto os pesos são ajustados durante a otimização.</div>
+          <div class="accordion-content">Otimização inspirada na seleção natural, que procura a melhor solução para um problema através de um processo iterativo que simula a evolução biológica</div>
         </div>
         <div class="accordion-item">
           <div class="accordion-title">LEARNING RATE <span class="accordion-icon">▶</span></div>
@@ -88,14 +92,19 @@
           <div class="accordion-content">Probabilidade de mutação durante o processo genético.</div>
         </div>
         <div class="accordion-item">
-          <div class="accordion-title">CHARS <span class="accordion-icon">▶</span></div>
-          <div class="accordion-content">Parâmetros ou características que o modelo irá otimizar.</div>
+          <div class="accordion-title">DROPOUT <span class="accordion-icon">▶</span></div>
+          <div class="accordion-content">Dropout é uma técnica de regularização usada em modelos de aprendizado profundo, particularmente Redes Neurais Convolucionais (CNNs), para evitar overfitting.</div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-title">WEIGHT DECAY <span class="accordion-icon">▶</span></div>
+          <div class="accordion-content">Decaimento de Peso é uma técnica de regularização aplicada aos pesos de uma rede neural. Minimiza a função de perda.</div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    var dados = [{'dados':{}}]
     // Script para abrir/fechar accordion
     document.querySelectorAll('.accordion-title').forEach(title => {
       title.addEventListener('click', () => {
@@ -108,9 +117,26 @@
     });
 
     // Prevenir submit do form para exemplo
-    document.getElementById('configForm').addEventListener('submit', e => {
+    const config_form = document.getElementById('configForm');
+
+    // Adicionar o regex para inserir apenas números, pontos e vírgulas
+    config_form.querySelectorAll('input').forEach(element => {
+      element.addEventListener('keyup', ()=>{
+          console.log(element.value)
+        })
+    })
+
+    config_form.addEventListener('submit', e => {
       e.preventDefault();
-      window.location.href = "dna.html";
+      // window.location.href = "dna.html"; // Redirecionar pelo backend.
+      let inputs = config_form.querySelectorAll('input')
+      inputs.forEach(element => {
+        if (!dados[0]['dados'][element.name]){
+          dados[0]['dados'][element.name] = {}
+        }
+        dados[0]['dados'][`${element.name}`] = element.value
+      });
+      console.log(dados[0])
     });
   </script>
  <script>
