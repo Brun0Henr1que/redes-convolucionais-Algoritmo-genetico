@@ -1,3 +1,17 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader, Subset
+from sklearn.model_selection import train_test_split
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+from class_CNN import SmallCNN
+import warnings
+warnings.filterwarnings("ignore", message=".*does not have many workers.*")
+    
 # ========================
 # 1. Espaço de Hiperparâmetros
 # ========================
@@ -119,8 +133,8 @@ def avaliar_fitness(individuo, device):
     )
 
     # Parâmetros de treinamento
-    num_epochs = 120                 # 120 épocas de treinamento para cada indivíduo
-    val_interval = 20                # validar a cada 20 épocas
+    num_epochs = 10                 # 120 épocas de treinamento para cada indivíduo
+    val_interval = 5                # validar a cada 20 épocas
     melhor_acc = 0.0
     val_acc = 0.0
     patience = 4                     # paciência de 4 validações sem melhora
@@ -209,7 +223,7 @@ def mutar_multiponto(individuo, space, num_mutacoes=2):
         individuo[chave] = random.choice(space[chave])
     return individuo
 
-def algoritmo_genetico(pop_size=4, geracoes=3, taxa_mutacao=0.3, device='cpu'):
+def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu'):
     historico = []
     tempo_inicio = time.time()
     populacao = [criar_individuo() for _ in range(pop_size)]
@@ -301,30 +315,16 @@ def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
 # ========================
 # 7. Execução Modular e Relatório
 # ========================
-if __name__ == '__main__':
-
-    import torch
-    import torch.nn as nn
-    import torch.nn.functional as F
-    from torchvision import datasets, transforms
-    from torch.utils.data import DataLoader, Subset
-    from sklearn.model_selection import train_test_split
-    import random
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import time
-    from class_CNN import SmallCNN
-    import warnings
-    warnings.filterwarnings("ignore", message=".*does not have many workers.*")
-
-    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    print(f"Usando dispositivo: {device}")
-    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
-        pop_size=15, geracoes=30, taxa_mutacao=0.3, device=device
-    )
-    show_stats(historico, tempo_total, melhor_ind, acc)
-    plot_accuracies(historico)
-    print("\n5 exemplos que o algoritmo ACERTOU:")
-    plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-    print("\n5 exemplos que o algoritmo ERROU:")
-    plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+"""
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+print(f"Usando dispositivo: {device}")
+melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
+    pop_size=2, geracoes=3, taxa_mutacao=0, device=device
+)
+show_stats(historico, tempo_total, melhor_ind, acc)
+plot_accuracies(historico)
+print("\n5 exemplos que o algoritmo ACERTOU:")
+plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
+print("\n5 exemplos que o algoritmo ERROU:")
+plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+"""

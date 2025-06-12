@@ -4,6 +4,8 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from class_CNN import SmallCNN
+from main import algoritmo_genetico, load_data, plot_accuracies, plot_image_examples, show_stats
 
 # Criação da aplicação FastAPI
 app = FastAPI()
@@ -25,26 +27,30 @@ async def exibir_formulario(request: Request):
     return templates.TemplateResponse('Home.html', {"request": request})
 
 @app.post("/parametros", response_class=HTMLResponse)
-async def processar_parametros(request: Request, nfc: str = Form(...), 
-                               learningRate: str = Form(...),
-                               batchSize: str = Form(...),
-                               filters: str = Form(...),
-                               popSize: str = Form(...),
-                               generations: str = Form(...),
-                               mutationRate: str = Form(...),
-                               dropout: str = Form(...),
-                               weightDecay: str = Form(...),):
+async def processar_parametros(request: Request,
+                               popSize: int = Form(...),
+                               generations: int = Form(...),
+                               mutationRate: int = Form(...)):
     # Aqui você pode fazer o que precisar com os dados recebidos
-    dados_recebidos = {"nfc": nfc, 
-                       "learningRate": learningRate, 
-                       "batchSize": batchSize,
-                       "filters": filters,
-                       "popSize": popSize,
-                       "generations": generations,
-                       "mutationRate": mutationRate,
-                       "dropout": dropout,
-                       "weightDecay": weightDecay
-                      }
+    mensagem = f"- Populacao: {popSize}\n"
+    mensagem += f"- Geracões: {generations}\n"
+    mensagem += f"- Taxa mutacao: {mutationRate}\n"
+
+    device = 'cuda' if torch.cuda. is_available() else 'cpu'
+    trainset, valset, full_valset = load_data()
+
+    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(pop_size=popSize, geracoes=generations, taxa_mutacao=mutationRate,device=device)
+
+    show_stats(historico, tempo_total, melhor_ind, acc)
+    plot_accuracies(historico)
     
+    print("\n5 exemplos que o algoritmo ACERTOU:")
+    plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
+    print("\n5 exemplos que o algoritmo ERROU:")
+    plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+
+    mensagem += f"- Melhor Individuo: {melhor_ind}\n"
+    mensagem += f"- Melhor Acuracia: {acc}\n"
+        
     # Exemplo: renderizar uma página de resposta mostrando os dados
-    return templates.TemplateResponse("dna.html", {"request": request, "dados": dados_recebidos})
+    return templates.TemplateResponse("dna.html", {"request": request, "mensagem": mensagem})
