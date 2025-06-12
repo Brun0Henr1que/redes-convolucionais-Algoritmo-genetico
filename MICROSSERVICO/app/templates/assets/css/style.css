@@ -108,6 +108,12 @@
       transition: transform 0.3s ease-in-out, box-shadow 0.5s ease-in-out, border-color 0.5s ease-in-out;
     }
 
+    .button-group{
+      display: flex;
+      gap: 15px;
+      flew-direction:row;
+    }
+
     .input-group input:focus {
     border: 1px solid #4d9353;
      outline: none;
@@ -129,8 +135,27 @@
       font-size: 1.1rem;
       transition: background-color 0.3s;
     }
+
+    .clear-btn{
+      background-color:rgb(147, 77, 77);
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 1.1rem;
+      transition: background-color 0.3s;
+    }
+    
     .calculate-btn:hover {
       background-color: #3c7542;
+    }
+
+    .clear-btn:hover {
+      background-color:rgb(117, 60, 60);
     }
     .section-title {
       font-weight: bold;
