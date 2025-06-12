@@ -10,7 +10,12 @@
 
 <body>
   <header>
-    <h1>AG CNN SMALL IMAGE</h1>
+    <div class="logo">
+      <figure>
+        <img src="assets/img/Logo_ifpa.png" alt="">
+      </figure>
+      <h1>AG CNN SMALL IMAGE</h1>
+    </div>
     <div>
     <a><button class="btn" title="Modo Escuro" id="toggle-dark" ><i class="fa-solid fa-moon"></i></button></a>
     <a href="Resultados.html"><button class="btn" title="Resultados"> <i class="fa-solid fa-chart-pie"></i></button></a>
@@ -19,49 +24,49 @@
 
   <div class="container">
     <div class="card">
-      <form id="configForm" autocomplete="off" method="post" action="/parametros">
-        <div class="input-group">
-          <label for="nfc">N FC</label>
-          <input type="text" id="nfc" name="nfc" />
+      <form id="configForm" autocomplete="off" method="post" action="/parametros" >
+        <div class="input-group" title="NFC">
+          <label for="nfc">NFC</label>
+          <input required type="text" id="nfc" name="nfc" class="validacao_parametros" placeholder="Ex.: 0.1, 35, 10" />
         </div>
         <div class="input-group">
           <label for="learningRate">LEARNING RATE</label>
-          <input type="text" id="learningRate" name="learningRate" />
+          <input required type="text" id="learningRate" name="learningRate" class="validacao_parametros" placeholder="Ex.: 0.001, 0.0005, 0.0001" />
         </div>
         <div class="input-group">
           <label for="batchSize">BATCH SIZE</label>
-          <input type="text" id="batchSize" name="batchSize" />
+          <input required type="text" id="batchSize" name="batchSize" class="validacao_parametros" placeholder="Ex.: 32, 64, 128, 256"  />
         </div>
         <div class="input-group">
           <label for="filters">FILTERS</label>
-          <input type="text" id="filters" name="filters" />
+          <input required type="text" id="filters" name="filters" class="validacao_parametros" placeholder="Ex.: 64, 128, 256, 512"  />
         </div>
         <div class="input-group">
           <label for="popSize">POP SIZE</label>
-          <input type="text" id="popSize" name="popSize" />
+          <input required type="text" id="popSize" name="popSize" class="validacao_parametros" placeholder="Ex.: 15"/>
         </div>
         <div class="input-group">
           <label for="generations">GENERATIONS</label>
-          <input type="text" id="generations" name="generations" />
+          <input required type="text" id="generations" name="generations" class="validacao_parametros" placeholder="Ex.: 30" />
         </div>
         <div class="input-group">
           <label for="mutationRate">MUTATION RATE</label>
-          <input type="text" id="mutationRate" name="mutationRate" />
+          <input required type="text" id="mutationRate" name="mutationRate" class="validacao_parametros" placeholder="Ex.: 0.3"/>
         </div>
         <div class="input-group">
           <label for="dropout">DROPOUT</label>
-          <input type="text" id="dropout" name="dropout" />
+          <input required type="text" id="dropout" name="dropout" class="validacao_parametros" placeholder="Ex.: 0.25, 0.3, 0.4, 0.5" />
         </div>
         <div class="input-group">
           <label for="weightDecay">WEIGHT DECAY</label>
-          <input type="text" id="weightDecay" name="weightDecay" />
+          <input required type="text" id="weightDecay" name="weightDecay" class="validacao_parametros" placeholder="Ex.: 0.0001, 0.0005, 0.001" />
         </div>
         <button class="calculate-btn" type="submit">CALCULAR</button>
       </form>
     </div>
 
     <div class="card info">
-      <h3>INFORMAÇÕES IMPORTANTES</h3>
+      <h3>SOBRE OS PARÂMETROS</h3>
       <div class="accordion">
         <div class="accordion-item">
           <div class="accordion-title">ALGORITMO GENÉTICO <span class="accordion-icon">▶</span></div>
@@ -127,6 +132,84 @@
         document.querySelectorAll('.accordion-title').forEach(t => t.classList.remove('active'));
         if (!isActive) {
           title.classList.add('active');
+        }
+      });
+    });
+</script>
+<script>
+  //regex
+    const inputs = document.querySelectorAll('.validacao_parametros');
+
+    function isDigit(char) {
+      return /\d/.test(char);
+    }
+
+    function cleanInput(value) {
+      let val = value.replace(/ /g, ',');
+      val = val.replace(/[^0-9.,]/g, '');
+
+      let result = '';
+      for (let i = 0; i < val.length; i++) {
+        const c = val[i];
+        if (c === '.') {
+          const prev = val[i - 1] || '';
+          const next = val[i + 1] || '';
+          const prevIsDigit = isDigit(prev);
+          const nextIsDigit = isDigit(next);
+          const prevIsComma = prev === ',';
+          const nextIsComma = next === ',';
+          if ((prevIsDigit || nextIsDigit) && !prevIsComma && !nextIsComma) {
+            result += c;
+          }
+        } else if (c === ',') {
+          const prev = val[i - 1] || '';
+          if (prev !== ',') {
+            result += c;
+          }
+        } else {
+          result += c;
+        }
+      }
+      return result;
+    }
+
+    inputs.forEach((input, index) => {
+      const errorMsg = document.getElementById(`errorMsg${index + 1}`);
+
+      input.addEventListener('input', () => {
+        const originalValue = input.value;
+        const cleaned = cleanInput(originalValue);
+
+        if (cleaned !== originalValue) {
+          const cursorPos = input.selectionStart - (originalValue.length - cleaned.length);
+          input.value = cleaned;
+          input.setSelectionRange(cursorPos, cursorPos);
+        }
+        errorMsg.textContent = '';
+      });
+
+      input.addEventListener('blur', () => {
+        let val = input.value.trim();
+
+        while (val.startsWith(',')) {
+          val = val.slice(1);
+        }
+        while (val.endsWith(',') || val.endsWith('.')) { // Também remove ponto no fim
+          val = val.slice(0, -1);
+        }
+
+        if (val === ',') {
+          val = '';
+        }
+
+        if (val !== input.value) {
+          input.value = val;
+        }
+
+        if (val.endsWith(',') || val.endsWith('.')) {
+          errorMsg.textContent = 'O valor não pode terminar com vírgula ou ponto.';
+        } else {
+          errorMsg.textContent = '';
         }
       });
     });
