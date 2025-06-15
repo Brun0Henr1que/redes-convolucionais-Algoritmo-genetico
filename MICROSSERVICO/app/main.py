@@ -179,7 +179,7 @@ def avaliar_fitness(individuo, device):
                     total += yb_val.size(0)
 
             val_acc = correct / total
-            print(f"    → Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}")
+            print(f"    Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}")
 
             # Ajusta o scheduler com base na acurácia de validação
             scheduler.step(val_acc)

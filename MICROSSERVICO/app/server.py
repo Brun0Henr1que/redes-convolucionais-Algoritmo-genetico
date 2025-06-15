@@ -27,30 +27,34 @@ async def exibir_formulario(request: Request):
     return templates.TemplateResponse('Home.html', {"request": request})
 
 @app.post("/parametros", response_class=HTMLResponse)
-async def processar_parametros(request: Request,
-                               popSize: int = Form(...),
-                               generations: int = Form(...),
-                               mutationRate: int = Form(...)):
+async def processar_parametros(request: Request,    
+                               popSize: str = Form(...),
+                               generations: str = Form(...),
+                               mutationRate: str = Form(...),
+                               nfc: str = Form(...)
+                               ):
+
     # Aqui você pode fazer o que precisar com os dados recebidos
     mensagem = f"- Populacao: {popSize}\n"
     mensagem += f"- Geracões: {generations}\n"
     mensagem += f"- Taxa mutacao: {mutationRate}\n"
+    mensagem += f"- nfc: {nfc}\n"
 
-    device = 'cuda' if torch.cuda. is_available() else 'cpu'
-    trainset, valset, full_valset = load_data()
+    # device = 'cuda' if torch.cuda. is_available() else 'cpu'
+    # trainset, valset, full_valset = load_data()
 
-    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(pop_size=popSize, geracoes=generations, taxa_mutacao=mutationRate,device=device)
+    # melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(pop_size=popSize, geracoes=generations, taxa_mutacao=mutationRate,device=device)
 
-    show_stats(historico, tempo_total, melhor_ind, acc)
-    plot_accuracies(historico)
+    # show_stats(historico, tempo_total, melhor_ind, acc)
+    # plot_accuracies(historico)
     
-    print("\n5 exemplos que o algoritmo ACERTOU:")
-    plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-    print("\n5 exemplos que o algoritmo ERROU:")
-    plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+    # print("\n5 exemplos que o algoritmo ACERTOU:")
+    # plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
+    # print("\n5 exemplos que o algoritmo ERROU:")
+    # plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
 
-    mensagem += f"- Melhor Individuo: {melhor_ind}\n"
-    mensagem += f"- Melhor Acuracia: {acc}\n"
+    # mensagem += f"- Melhor Individuo: {melhor_ind}\n"
+    # mensagem += f"- Melhor Acuracia: {acc}\n"
         
     # Exemplo: renderizar uma página de resposta mostrando os dados
     return templates.TemplateResponse("dna.html", {"request": request, "mensagem": mensagem})
