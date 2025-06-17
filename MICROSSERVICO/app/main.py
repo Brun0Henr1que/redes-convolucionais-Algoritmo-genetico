@@ -11,18 +11,6 @@ import time
 from class_CNN import SmallCNN
 import warnings
 warnings.filterwarnings("ignore", message=".*does not have many workers.*")
-    
-# ========================
-# 1. Espaço de Hiperparâmetros
-# ========================
-space = {
-    "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
-    "batch_size": [32, 64, 128],             # Tamanhos de lote variados para testar desempenho
-    "n_filters": [64, 128, 256],             # Número de filtros em cada camada convolucional
-    "n_fc": [128],                                # Tamanhos das camadas totalmente conectadas
-    "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
-    "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
-}
 
 # ========================
 # 2. Dataset CIFAR-100 
@@ -66,7 +54,7 @@ trainset, valset, full_valset = load_data()
 # ========================
 # 4. Funções do AG e Avaliação
 # ========================
-def criar_individuo():
+def criar_individuo(space):
     return {
         "learning_rate": random.choice(space["learning_rate"]),
         "batch_size": random.choice(space["batch_size"]),
@@ -223,10 +211,10 @@ def mutar_multiponto(individuo, space, num_mutacoes=2):
         individuo[chave] = random.choice(space[chave])
     return individuo
 
-def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu'):
+def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu', space={}):
     historico = []
     tempo_inicio = time.time()
-    populacao = [criar_individuo() for _ in range(pop_size)]
+    populacao = [criar_individuo(space) for _ in range(pop_size)]
 
     for g in range(geracoes):
         print(f"\n--- Geração {g+1}/{geracoes} ---")
@@ -254,7 +242,7 @@ def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu'):
             pai1, pai2 = random.sample(selecionados, 2)
             filho = crossover(pai1, pai2)
             if random.random() < taxa_mutacao:
-                filho = mutar_multiponto(filho, space, num_mutacoes=2)
+                filho = mutar_multiponto(filho, space, num_mutacoes=3)
             nova_populacao.append(filho)
         populacao = nova_populacao
 
@@ -295,7 +283,6 @@ def show_stats(historico, tempo_total, melhor_ind, acc):
     print(f"Acurácia mínima (histórico): {np.min(acuracias):.4f}")
 
 def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
-    import matplotlib.pyplot as plt
     idxs = np.where((preds == labels) if acertos else (preds != labels))[0][:n]
     if len(idxs) == 0:
         print("Nenhum exemplo encontrado.")
@@ -315,16 +302,16 @@ def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
 # ========================
 # 7. Execução Modular e Relatório
 # ========================
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    print(f"Usando dispositivo: {device}")
-    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
-        pop_size=5, geracoes=5, taxa_mutacao=0.3, device=device
-    )
-    show_stats(historico, tempo_total, melhor_ind, acc)
-    plot_accuracies(historico)
-    print("\n5 exemplos que o algoritmo ACERTOU:")
-    plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-    print("\n5 exemplos que o algoritmo ERROU:")
-    plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+#     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+#     print(f"Usando dispositivo: {device}")
+#     melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
+#         pop_size=5, geracoes=5, taxa_mutacao=0.3, device=device
+#     )
+#     show_stats(historico, tempo_total, melhor_ind, acc)
+#     plot_accuracies(historico)
+#     print("\n5 exemplos que o algoritmo ACERTOU:")
+#     plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
+#     print("\n5 exemplos que o algoritmo ERROU:")
+#     plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
