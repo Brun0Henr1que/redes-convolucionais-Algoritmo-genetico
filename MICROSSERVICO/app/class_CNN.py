@@ -157,7 +157,7 @@ class SmallCNN(nn.Module):
 
         #fc1 e fc2 realmente definidos
         self.fc1 = nn.Linear(self.flatten_dim, self.n_fc, device=device)
-        self.fc2 = nn.Linear(self.n_fc, 100, device=device)
+        self.fc2 = nn.Linear(self.n_fc, 10, device=device)
 
     def forward(self, x):
         # Bloco 1

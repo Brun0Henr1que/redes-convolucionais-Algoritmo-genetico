@@ -17,15 +17,15 @@ warnings.filterwarnings("ignore", message=".*does not have many workers.*")
 # ========================
 space = {
     "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
-    "batch_size": [32, 64, 128, 256],             # Tamanhos de lote variados para testar desempenho
-    "n_filters": [64, 128, 256, 512],             # Número de filtros em cada camada convolucional
+    "batch_size": [32, 64, 128],             # Tamanhos de lote variados para testar desempenho
+    "n_filters": [64, 128, 256],             # Número de filtros em cada camada convolucional
     "n_fc": [128],                                # Tamanhos das camadas totalmente conectadas
     "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
     "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
 }
 
 # ========================
-# 2. Dataset CIFAR-100
+# 2. Dataset CIFAR-100 
 # ========================
 def load_data():
     # Aplicando data augmentation
@@ -38,7 +38,7 @@ def load_data():
         transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
     ])
 
-    full_train_dataset = datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+    full_train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
 
     train_idx, val_idx = train_test_split(
         list(range(len(full_train_dataset))),
@@ -49,7 +49,7 @@ def load_data():
     )
 
     train_subset = Subset(
-        datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train),
+        datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train),
         train_idx[:30000] # 30000 imagens de treino
     )
     val_subset = Subset(
@@ -129,15 +129,15 @@ def avaliar_fitness(individuo, device):
         optimizer,
         mode='max',
         factor=0.5,
-        patience=3
+        patience=2
     )
 
     # Parâmetros de treinamento
-    num_epochs = 10                 # 120 épocas de treinamento para cada indivíduo
-    val_interval = 5                # validar a cada 20 épocas
+    num_epochs = 30                 # 120 épocas de treinamento para cada indivíduo
+    val_interval = 3                # validar a cada 20 épocas
     melhor_acc = 0.0
     val_acc = 0.0
-    patience = 4                     # paciência de 4 validações sem melhora
+    patience = 2                     # paciência de 4 validações sem melhora
     patience_counter = 0
     stop_training = False
 
@@ -315,16 +315,16 @@ def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
 # ========================
 # 7. Execução Modular e Relatório
 # ========================
-"""
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-print(f"Usando dispositivo: {device}")
-melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
-    pop_size=2, geracoes=3, taxa_mutacao=0, device=device
-)
-show_stats(historico, tempo_total, melhor_ind, acc)
-plot_accuracies(historico)
-print("\n5 exemplos que o algoritmo ACERTOU:")
-plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-print("\n5 exemplos que o algoritmo ERROU:")
-plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
-"""
+if __name__ == "__main__":
+
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    print(f"Usando dispositivo: {device}")
+    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
+        pop_size=5, geracoes=5, taxa_mutacao=0.3, device=device
+    )
+    show_stats(historico, tempo_total, melhor_ind, acc)
+    plot_accuracies(historico)
+    print("\n5 exemplos que o algoritmo ACERTOU:")
+    plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
+    print("\n5 exemplos que o algoritmo ERROU:")
+    plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
