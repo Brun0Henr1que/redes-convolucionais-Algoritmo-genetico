@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <title>Loading</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       margin: 0;
       background: #f1f1f1;
-      font-family: Arial, sans-serif;;
+      font-family: Arial, sans-serif;
+      ;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -40,6 +44,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <canvas id="dnaCanvas" width="300" height="300"></canvas>
@@ -47,10 +52,12 @@
   <div>
     <span class="dicas-container"><i class="fa-solid fa-lightbulb" style="color: yellowgreen;"></i> Dicas:</span>
     <span class="dicas-container" id="dica"></span>
-    <span>nfc: {{ mensagem }}</span>
   </div>
-    
- 
+  <div id="status-log" style="white-space: pre-wrap; border:1px solid #ccc; height: 300px; overflow-y:scroll;">
+
+  </div>
+
+
   <script>
     // DNA ANIMATION
     const canvas = document.getElementById("dnaCanvas");
@@ -130,5 +137,29 @@
 
   </script>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const statusDiv = document.getElementById("status-log");
+      const socket = new WebSocket("ws://localhost:8000/ws/status");
+
+      socket.onmessage = function (event) {
+        statusDiv.innerText += event.data + "\n";
+        statusDiv.scrollTop = statusDiv.scrollHeight;
+      };
+
+      socket.onclose = function () {
+        statusDiv.innerText += "\nConexão encerrada.";
+        setTimeout(() => {
+          window.location.href = "/resultados";
+        }, 1000);
+      };
+
+      socket.onerror = function (error) {
+        console.error("WebSocket Error:", error);
+      };
+    });
+  </script>
+
 </body>
+
 </html>

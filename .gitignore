@@ -6,3 +6,4 @@ melhor_modelo.pt
 MICROSSERVICO/app/venv/
 MICROSSERVICO/app/__pycache__/
 MICROSSERVICO/app/data/
+MICROSSERVICO/app/melhor_modelo.pt

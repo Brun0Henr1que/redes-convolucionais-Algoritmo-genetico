@@ -4,19 +4,31 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi import WebSocket
 from class_CNN import SmallCNN
 from main import algoritmo_genetico, load_data, plot_accuracies, plot_image_examples, show_stats
+
+resultado_ag = None
 
 # ========================
 # 1. Espaço de Hiperparâmetros
 # ========================
+# space={
+#         "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
+#         "batch_size": [4 , 8 , 16, 32, 64, 128],      # Tamanhos de lote variados para testar desempenho
+#         "n_filters": [4, 8, 16, 32, 64, 128],         # Número de filtros em cada camada convolucional
+#         "n_fc": [8, 16, 32, 64, 128, 256],            # Tamanhos das camadas totalmente conectadas
+#         "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
+#         "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
+# }
+
 space={
-        "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
-        "batch_size": [32, 64, 128],                  # Tamanhos de lote variados para testar desempenho
-        "n_filters": [64, 128, 256],                  # Número de filtros em cada camada convolucional
-        "n_fc": [128],                                # Tamanhos das camadas totalmente conectadas
-        "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
-        "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
+        "learning_rate": [1e-3],          # Taxas de aprendizado comumente eficazes
+        "batch_size": [4],      # Tamanhos de lote variados para testar desempenho
+        "n_filters": [4],         # Número de filtros em cada camada convolucional
+        "n_fc": [8],            # Tamanhos das camadas totalmente conectadas
+        "dropout": [0.25],             # Taxas de dropout para regularização
+        "weight_decay": [1e-4],           # Decaimento de peso para regularização
 }
 
 # Criação da aplicação FastAPI
@@ -41,6 +53,7 @@ def str_para_lista(s):
 async def exibir_formulario(request: Request):
     return templates.TemplateResponse('Home.html', {"request": request})
 
+# Rota para receber os parametros e tratá-los
 @app.post("/parametros", response_class=HTMLResponse)
 async def processar_parametros(request: Request,    
                                popSize: int = Form(...),
@@ -62,7 +75,7 @@ async def processar_parametros(request: Request,
     dropout_list = str_para_lista(dropout)
     weightDecay_list = str_para_lista(weightDecay)
 
-    #concatenando as listas:
+    # concatenando as listas:
     space["learning_rate"] += learningRate_list
     space["batch_size"] += batchSize_list
     space["n_filters"] += filters_list
@@ -74,27 +87,73 @@ async def processar_parametros(request: Request,
     for key in space:
         space[key] = list(set(space[key]))
 
-    # Aqui você pode fazer o que precisar com os dados recebidos
-    mensagem = f"- Populacao: {popSize}\n"
-    mensagem += f"- Geracões: {generations}\n"
-    mensagem += f"- Taxa mutacao: {mutationRate}\n"
-    mensagem += f"- nfc: {nfc}\n"
+    global space_final
+    global pop__size
+    global generations__
+    global mutation__rate 
 
-    device = 'cuda' if torch.cuda. is_available() else 'cpu'
-    trainset, valset, full_valset = load_data()
+    space_final = space
+    pop__size = popSize
+    generations__ = generations
+    mutation__rate = mutationRate
 
-    melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(pop_size=popSize, geracoes=generations, taxa_mutacao=mutationRate,device=device, space=space)
-
-    show_stats(historico, tempo_total, melhor_ind, acc)
-    # plot_accuracies(historico)
-    
-    # print("\n5 exemplos que o algoritmo ACERTOU:")
-    # plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-    # print("\n5 exemplos que o algoritmo ERROU:")
-    # plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
-
-    mensagem += f"- Melhor Individuo: {melhor_ind}\n"
-    mensagem += f"- Melhor Acuracia: {acc}\n"
-        
-    # Exemplo: renderizar uma página de resposta mostrando os dados
+    mensagem = "Dados enviados, aguarde o processamento do seu AG (isso pode demorar um pouco)."
     return templates.TemplateResponse("dna.html", {"request": request, "mensagem": mensagem})
+
+# Rota para iniciar um websocket + AG + CNN (Aqui que a mágica acontece)
+@app.websocket("/ws/status")
+async def websocket_status(websocket: WebSocket):
+    await websocket.accept()
+
+    async def ws_send(msg):
+        await websocket.send_text(msg)
+
+    try:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(device)
+
+        melhor_ind, acc, preds, labels, historico, tempo_total = await algoritmo_genetico(
+            pop_size=pop__size,
+            geracoes=generations__,
+            taxa_mutacao=mutation__rate,
+            device=device,
+            space=space_final,
+            ws_send=ws_send
+        )
+
+        global resultado_ag 
+
+        resultado_ag = {
+            "melhor_ind": melhor_ind,
+            "acc": acc,
+            "tempo_total": tempo_total,
+            "historico": historico,
+            "num_geracoes": generations__,
+            "pop_size": pop__size,
+            "mutation_rate": mutation__rate
+        }
+
+        print(resultado_ag)
+
+        await websocket.send_text("AG finalizado com sucesso!")
+    except Exception as e:
+        await websocket.send_text(f"Erro: {str(e)}")
+    finally:
+        await websocket.close()
+
+@app.get("/resultados", response_class=HTMLResponse)
+async def mostrar_resultados(request: Request):
+
+    if not resultado_ag:
+        mensagem = "Nenhum resultado disponível ainda."
+        return templates.TemplateResponse("resultados.html", {"request": request, "mensagem": mensagem})
+
+    return templates.TemplateResponse("resultados.html", {
+        "request": request,
+        "melhor_ind": resultado_ag["melhor_ind"],
+        "acc": resultado_ag["acc"],
+        "tempo_total": resultado_ag["tempo_total"],
+        "num_geracoes": resultado_ag["num_geracoes"],
+        "pop_size": resultado_ag["pop_size"],
+        "mutation_rate": resultado_ag["mutation_rate"]
+    })

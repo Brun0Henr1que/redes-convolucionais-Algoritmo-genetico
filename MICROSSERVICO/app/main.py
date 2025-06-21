@@ -12,6 +12,14 @@ from class_CNN import SmallCNN
 import warnings
 warnings.filterwarnings("ignore", message=".*does not have many workers.*")
 
+
+# função de log
+async def log(msg, ws_send=None):
+    if ws_send:
+        await ws_send(msg)
+    else:
+        print(msg)
+
 # ========================
 # 2. Dataset CIFAR-100 
 # ========================
@@ -49,8 +57,6 @@ def load_data():
     full_valset = Subset(train_subset, val_idx)
     return train_subset, val_subset, full_valset
 
-trainset, valset, full_valset = load_data()
-
 # ========================
 # 4. Funções do AG e Avaliação
 # ========================
@@ -70,7 +76,8 @@ def crossover(pai1, pai2):
         filho[key] = random.choice([pai1[key], pai2[key]])
     return filho
 
-def avaliar_fitness(individuo, device):
+async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
+    trainset, valset, full_valset = load_data()
     # Dataloaders
     batch_size = individuo["batch_size"]
     pin_mem = True if device.startswith('cuda') else False # copia os valores para a memória da GPU
@@ -148,14 +155,15 @@ def avaliar_fitness(individuo, device):
             epoch_loss += loss.item() * xb.size(0)
             total_train += xb.size(0)
 
-        avg_train_loss = epoch_loss / total_train
-        print(f"Época {epoch:03d}/{num_epochs} — Loss Treino: {avg_train_loss:.4f}") # Computando o loss (função de perda) por época
+        avg_train_loss = epoch_loss / total_train 
+        await log(f"Época {epoch:03d}/{num_epochs} — Loss Treino: {avg_train_loss:.4f}", ws_send) # Computando o loss (função de perda) por época
 
         # Validação do early stopping
         if epoch % val_interval == 0:
             model.eval()
             correct = 0
             total = 0
+            all_preds, all_labels = [], []
 
             with torch.no_grad():
                 for xb_val, yb_val in val_loader:
@@ -164,10 +172,12 @@ def avaliar_fitness(individuo, device):
                     logits_val = model(xb_val)
                     _, preds = torch.max(logits_val, dim=1)
                     correct += (preds == yb_val).sum().item()
+                    # all_preds.extend(preds.cpu().numpy())
+                    # all_labels.extend(yb_val.cpu().numpy())
                     total += yb_val.size(0)
 
             val_acc = correct / total
-            print(f"    Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}")
+            await log(f"    Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}", ws_send)
 
             # Ajusta o scheduler com base na acurácia de validação
             scheduler.step(val_acc)
@@ -177,17 +187,17 @@ def avaliar_fitness(individuo, device):
                 melhor_acc = val_acc
                 patience_counter = 0
                 torch.save(model.state_dict(), "melhor_modelo.pt")
-                print(f"    >>> Novo melhor modelo salvo! Val Acc: {melhor_acc:.4f}")
             else:
                 patience_counter += 1
-                print(f"    (Sem melhora: patience_counter = {patience_counter}/{patience})")
-
                 if patience_counter >= patience:
-                    print(f"\nEarly stopping acionado na época {epoch}.")
+                    await log(f"\nEarly stopping acionado na época {epoch}.", ws_send)
                     stop_training = True
 
         if stop_training:
             break
+
+    # if save_preds:
+    #     return val_acc, all_preds, all_labels
 
     return val_acc
 
@@ -211,27 +221,27 @@ def mutar_multiponto(individuo, space, num_mutacoes=2):
         individuo[chave] = random.choice(space[chave])
     return individuo
 
-def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu', space={}):
+async def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu', space={}, ws_send=None):
     historico = []
     tempo_inicio = time.time()
     populacao = [criar_individuo(space) for _ in range(pop_size)]
 
     for g in range(geracoes):
-        print(f"\n--- Geração {g+1}/{geracoes} ---")
+        await log(f"\n--- Geração {g+1}/{geracoes} ---", ws_send)
         fitness = []
         for ind in populacao:
-            print(f'Indivíduo: {ind}')
+            await log(f'Indivíduo: {ind}', ws_send)
             start = time.time()
-            acc = avaliar_fitness(ind, device)
+            acc = await avaliar_fitness(ind, device, ws_send, save_preds=False)
             elapsed = time.time() - start
             fitness.append(acc)
-            print(f"Acurácia: {acc:.4f} | Tempo: {elapsed:.1f}s")
+            await log(f"Acurácia: {acc:.4f} | Tempo: {elapsed:.1f}s", ws_send)
 
         # Salva histórico dos 4 melhores da geração
         melhores = sorted(zip(populacao, fitness), key=lambda x: x[1], reverse=True)
         historico.append([fit for _, fit in melhores[:4]])
         for i, (ind, fit) in enumerate(melhores[:4]):
-            print(f"{i+1}: Acc = {fit:.4f}, {ind}")
+            await log(f"{i+1}: Acc = {fit:.4f}, {ind}", ws_send)
 
         # Seleção por torneio
         selecionados = tournament_selection(populacao, fitness, tournament_size=3)
@@ -246,17 +256,17 @@ def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu', spa
             nova_populacao.append(filho)
         populacao = nova_populacao
 
-    # Melhor resultado final (com predição para análise)
-    final_fitness = []
-    for ind in populacao:
-        acc = avaliar_fitness(ind, device)
-        final_fitness.append(acc)
-    melhor_indice = final_fitness.index(max(final_fitness))
+    # Escolher o melhor indivíduo da última geração
+    melhor_indice = fitness.index(max(fitness))
     melhor_ind = populacao[melhor_indice]
-    acc, preds, labels = avaliar_fitness(melhor_ind, device, save_preds=True)
+
+    # Reavaliar o melhor apenas para obter preds e labels
+    # acc, preds, labels = await avaliar_fitness(melhor_ind, device, ws_send, save_preds=True)
+    acc = await avaliar_fitness(melhor_ind, device, ws_send, save_preds=False)
+    await log(f"Acurácia: {acc:.4f} | Tempo: {elapsed:.1f}s", ws_send)
     tempo_total = time.time() - tempo_inicio
 
-    return melhor_ind, acc, preds, labels, historico, tempo_total
+    return melhor_ind, acc, None, None, historico, tempo_total
 
 # ========================
 # 6. Funções de Relatório e Visualização

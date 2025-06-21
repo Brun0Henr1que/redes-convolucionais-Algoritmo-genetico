@@ -14,5 +14,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expõe a porta que o FastAPI usará
 EXPOSE 8000
 
-# Comando para rodar o servidor (ajuste se usar outro arquivo que não seja main.py)
+# Comando para rodar o servidor
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
