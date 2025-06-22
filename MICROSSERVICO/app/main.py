@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,7 +24,17 @@ async def log(msg, ws_send=None):
 # ========================
 # 2. Dataset CIFAR-100 
 # ========================
+
+trainset, valset, full_valset = 0, 0, 0
+
 def load_data():
+
+    # Transforms SEM data augmentation
+    transform_original = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
+    ])
+
     # Aplicando data augmentation
     transform_train = transforms.Compose([
         transforms.RandomHorizontalFlip(),
@@ -34,6 +45,9 @@ def load_data():
         transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
     ])
 
+    original_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_original)
+
+    # dataset com data augmentation
     full_train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
 
     train_idx, val_idx = train_test_split(
@@ -45,17 +59,17 @@ def load_data():
     )
 
     train_subset = Subset(
-        datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train),
+        full_train_dataset,
         train_idx[:30000] # 30000 imagens de treino
     )
     val_subset = Subset(
-        full_train_dataset,
+        original_dataset,
         val_idx[:10000] # 10000 imagens de teste
     )
 
-    # Para mostrar imagens depois
-    full_valset = Subset(train_subset, val_idx)
-    return train_subset, val_subset, full_valset
+    return train_subset, val_subset, original_dataset
+
+trainset, valset, full_valset = load_data()
 
 # ========================
 # 4. Funções do AG e Avaliação
@@ -77,7 +91,7 @@ def crossover(pai1, pai2):
     return filho
 
 async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
-    trainset, valset, full_valset = load_data()
+    
     # Dataloaders
     batch_size = individuo["batch_size"]
     pin_mem = True if device.startswith('cuda') else False # copia os valores para a memória da GPU
@@ -128,13 +142,15 @@ async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
     )
 
     # Parâmetros de treinamento
-    num_epochs = 30                 # 120 épocas de treinamento para cada indivíduo
-    val_interval = 3                # validar a cada 20 épocas
+    num_epochs = 2                 # 120 épocas de treinamento para cada indivíduo # mudar para 30 depois
+    val_interval = 1                # validar a cada 20 épocas #voltar para 3
     melhor_acc = 0.0
     val_acc = 0.0
     patience = 2                     # paciência de 4 validações sem melhora
     patience_counter = 0
     stop_training = False
+
+    true_val_indices = valset.indices if isinstance(valset, Subset) else list(range(len(valset)))
 
     # Treinamento
     for epoch in range(1, num_epochs + 1):
@@ -163,18 +179,33 @@ async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
             model.eval()
             correct = 0
             total = 0
-            all_preds, all_labels = [], []
+            true_val_indices = valset.indices if isinstance(valset, Subset) else list(range(len(valset)))
+            all_preds, all_labels, all_true_idxs = [], [], []
 
             with torch.no_grad():
+                idx_pointer = 0  # Ponteiro para percorrer true_val_indices de forma segura
                 for xb_val, yb_val in val_loader:
                     xb_val = xb_val.to(device)
                     yb_val = yb_val.to(device)
                     logits_val = model(xb_val)
                     _, preds = torch.max(logits_val, dim=1)
                     correct += (preds == yb_val).sum().item()
+
                     # all_preds.extend(preds.cpu().numpy())
                     # all_labels.extend(yb_val.cpu().numpy())
                     total += yb_val.size(0)
+
+                    batch_size_actual = len(yb_val)
+
+                    # Mapeia os índices reais desse batch
+                    batch_true_idxs = true_val_indices[idx_pointer : idx_pointer + batch_size_actual]
+
+                    # Acumula tudo
+                    all_preds.extend(preds.cpu().numpy())
+                    all_labels.extend(yb_val.cpu().numpy())
+                    all_true_idxs.extend(batch_true_idxs)
+
+                    idx_pointer += batch_size_actual
 
             val_acc = correct / total
             await log(f"    Validação @ Época {epoch:03d}: Acc = {val_acc:.4f}", ws_send)
@@ -196,8 +227,8 @@ async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
         if stop_training:
             break
 
-    # if save_preds:
-    #     return val_acc, all_preds, all_labels
+    if save_preds:
+        return val_acc, np.array(all_preds), np.array(all_labels), np.array(all_true_idxs)
 
     return val_acc
 
@@ -205,7 +236,7 @@ async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
 # 5. AG Modular com Coleta de Estatísticas
 # ========================
 
-def tournament_selection(populacao, fitness, tournament_size=3):
+def tournament_selection(populacao, fitness, tournament_size=2):
     selecionados = []
     pop_size = len(populacao)
     for _ in range(pop_size):
@@ -244,7 +275,7 @@ async def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu
             await log(f"{i+1}: Acc = {fit:.4f}, {ind}", ws_send)
 
         # Seleção por torneio
-        selecionados = tournament_selection(populacao, fitness, tournament_size=3)
+        selecionados = tournament_selection(populacao, fitness, tournament_size=2)
 
         # Cruzamento e mutação multiponto
         nova_populacao = selecionados[:]
@@ -261,67 +292,61 @@ async def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu
     melhor_ind = populacao[melhor_indice]
 
     # Reavaliar o melhor apenas para obter preds e labels
-    # acc, preds, labels = await avaliar_fitness(melhor_ind, device, ws_send, save_preds=True)
-    acc = await avaliar_fitness(melhor_ind, device, ws_send, save_preds=False)
-    await log(f"Acurácia: {acc:.4f} | Tempo: {elapsed:.1f}s", ws_send)
+    await log(f"-====-Fazendo a avaliação final-====-", ws_send)
+    acc, preds, labels, true_idx = await avaliar_fitness(melhor_ind, device, ws_send, save_preds=True)
     tempo_total = time.time() - tempo_inicio
 
-    return melhor_ind, acc, None, None, historico, tempo_total
+    # Média das acurácias
+    acuracias = [acc for hist in historico for acc in hist]
+    media_acuracias = np.mean(acuracias)
+
+    salvar_image_examples(full_valset, preds, labels, true_idx, acertos=True, n=5)
+    salvar_image_examples(full_valset, preds, labels, true_idx, acertos=False, n=5)
+
+    return melhor_ind, acc, historico, tempo_total, media_acuracias
 
 # ========================
 # 6. Funções de Relatório e Visualização
 # ========================
-def plot_accuracies(historico):
-    plt.figure(figsize=(8, 5))
-    for i in range(len(historico[0])):  # 4 melhores
-        plt.plot([h[i] for h in historico], label=f"Indivíduo {i+1}")
-    plt.xlabel("Geração")
-    plt.ylabel("Acurácia dos melhores")
-    plt.title("Acurácia dos 4 melhores indivíduos por geração")
-    plt.legend()
-    plt.grid()
-    plt.show()
 
-def show_stats(historico, tempo_total, melhor_ind, acc):
-    print("\n========== RELATÓRIO FINAL ==========")
-    print(f"Tempo total de execução: {tempo_total:.1f} segundos")
-    print(f"Melhor indivíduo final: {melhor_ind}")
-    print(f"Acurácia do melhor: {acc:.4f}")
-    acuracias = [acc for hist in historico for acc in hist]
-    print(f"Acurácia média (todas): {np.mean(acuracias):.4f}")
-    print(f"Acurácia máxima (histórico): {np.max(acuracias):.4f}")
-    print(f"Acurácia mínima (histórico): {np.min(acuracias):.4f}")
+def salvar_image_examples(full_valset, preds, labels, true_idxs, acertos=True, n=5, output_dir="templates\\assets\\img"):
 
-def plot_image_examples(full_valset, preds, labels, acertos=True, n=5):
-    idxs = np.where((preds == labels) if acertos else (preds != labels))[0][:n]
+    preds = np.atleast_1d(preds)
+    labels = np.atleast_1d(labels)
+    true_idxs = np.atleast_1d(true_idxs)
+
+    # Define os índices de acerto ou erro
+    if acertos:
+        idxs = np.where(preds == labels)[0]
+        prefix = "acerto"
+    else:
+        idxs = np.where(preds != labels)[0]
+        prefix = "erro"
+
     if len(idxs) == 0:
-        print("Nenhum exemplo encontrado.")
+        print(f"Nenhum exemplo {'acertado' if acertos else 'errado'} encontrado.")
         return
-    plt.figure(figsize=(12, 3))
-    for i, idx in enumerate(idxs):
-        img, label = full_valset[idx]
-        img = img.permute(1,2,0) * torch.tensor([0.2675, 0.2565, 0.2761]) + torch.tensor([0.5071, 0.4867, 0.4408])
-        img = img.numpy().clip(0,1)
-        plt.subplot(1, n, i+1)
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for i, idx in enumerate(idxs[:n]):
+        real_idx = true_idxs[idx]
+        img, label = full_valset[real_idx]
+
+        # Desnormalizando a imagem (ajuste os valores se seus meios/std forem diferentes)
+        img = img.permute(1, 2, 0) * torch.tensor([0.5071, 0.4865, 0.4409]) + torch.tensor([0.2673, 0.2564, 0.2762])
+        img = img.numpy().clip(0, 1)
+
+        plt.figure(figsize=(2, 2))
         plt.imshow(img)
-        plt.title(f"Pred:{preds[idx]}\nTrue:{labels[idx]}")
+        plt.title(f"Pred: {preds[idx]} | True: {labels[idx]}")
         plt.axis('off')
-    plt.suptitle("Acertos" if acertos else "Erros")
-    plt.show()
 
-# ========================
-# 7. Execução Modular e Relatório
-# ========================
-# if __name__ == "__main__":
+        file_path = os.path.join(output_dir, f"{prefix}_{i+1}.png")
+        plt.savefig(file_path, bbox_inches='tight')
+        plt.close()
 
-#     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-#     print(f"Usando dispositivo: {device}")
-#     melhor_ind, acc, preds, labels, historico, tempo_total = algoritmo_genetico(
-#         pop_size=5, geracoes=5, taxa_mutacao=0.3, device=device
-#     )
-#     show_stats(historico, tempo_total, melhor_ind, acc)
-#     plot_accuracies(historico)
-#     print("\n5 exemplos que o algoritmo ACERTOU:")
-#     plot_image_examples(full_valset, preds, labels, acertos=True, n=5)
-#     print("\n5 exemplos que o algoritmo ERROU:")
-#     plot_image_examples(full_valset, preds, labels, acertos=False, n=5)
+        print(f"Salvo: {file_path}")
+
+
+

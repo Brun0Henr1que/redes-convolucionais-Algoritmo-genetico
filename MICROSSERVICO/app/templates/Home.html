@@ -113,7 +113,7 @@
   </div>
   <footer>
     <figure>
-      <img src="assets/img/Logo_ifpa.png" alt="">
+      <img src="/assets/img/Logo_ifpa.png" alt="">
     </figure>
     <div class="footer-desenvolvedores">
         <nav>
@@ -232,6 +232,23 @@
         }
       });
     });
+</script>
+
+<!-- impede que a população seja menor que 3 -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const popSizeInput = document.getElementById("popSize");
+
+    popSizeInput.addEventListener("input", function() {
+        const valor = parseInt(this.value);
+        if (this.value !== "" && (isNaN(valor) || valor <= 1)) {
+            alert("O tamanho da poppulação deve ser maior que 3")
+            this.value = 4
+        } else {
+            this.style.borderColor = "";
+        }
+    });
+});
 </script>
 </body>
 </html>

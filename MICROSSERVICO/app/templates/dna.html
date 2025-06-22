@@ -145,13 +145,17 @@
       socket.onmessage = function (event) {
         statusDiv.innerText += event.data + "\n";
         statusDiv.scrollTop = statusDiv.scrollHeight;
+
+        // Se a mensagem for o sinal de finalização, então redireciona
+        if (event.data.includes("AG finalizado com sucesso!")) {
+          setTimeout(() => {
+            window.location.href = "/resultados";
+          }, 1000);
+        }
       };
 
       socket.onclose = function () {
         statusDiv.innerText += "\nConexão encerrada.";
-        setTimeout(() => {
-          window.location.href = "/resultados";
-        }, 1000);
       };
 
       socket.onerror = function (error) {

@@ -16,9 +16,9 @@
   <header>
     <div class="logo">
       <figure>
-        <img src="assets/img/Logo_ifpa.png" alt="">
+        <img src="/assets/img/Logo_ifpa.png" alt="">
       </figure>
-      <h1>AG CNN SMALL IMAGE</h1>
+      <h2>Resultados do seu algorítmo genético</h1>
     </div>
     <div>
       <a><button class="btn" title="Modo Escuro" id="toggle-dark"><i class="fa-solid fa-moon"></i></button></a>
@@ -27,149 +27,78 @@
   </header>
 
   <main>
-    <div class="stat-cards">
-      <div class="stat">
-        <h2>64</h2>
-        <p>Nº DA ÚLTIMA GERAÇÃO</p>
-      </div>
-      <div class="stat">
-        <h2>88,3</h2>
-        <p>FITNESS</p>
-      </div>
-      <div class="stat">
-        <h2>88,4</h2>
-        <p>MÉDIA DE GERAÇÕES</p>
-      </div>
-      <div class="stat">
-        <h2>00:00:30</h2>
-        <p>MELHOR TEMPO</p>
-      </div>
-      <div class="stat">
-        <h2>0,0005</h2>
-        <p>ACURÁCIA</p>
-      </div>
-    </div>
-    <br>
-    <div class="history-section">
-      <div class="card">
-        <h3 class="images-title">HISTÓRICO DE CONFIGURAÇÕES</h3>
-        <div class="table-container">
-          <table class="history-table">
-            <thead>
-              <tr>
-                <th>TARGET</th>
-                <th>POP SIZE</th>
-                <th>GENERATIONS</th>
-                <th>MUTATION RATE</th>
-                <th>CHARS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Exemplo de linha -->
-              <tr>
-                <td>ABC123</td>
-                <td>100</td>
-                <td>50</td>
-                <td>0.02</td>
-                <td>X, Y, Z</td>
-              </tr>
-              <!-- Duplicar conforme necessário -->
-            </tbody>
-          </table>
+    <h1 style="text-align: center; color:#4d9353;">Estatísticas</h2>
+      <div class="stat-cards">
+        <div class="stat">
+          <h2>{{ tempo_total }}</h2>
+          <p>TEMPO TOTAL</p>
         </div>
-      </div>
-    </div>
-    <div class="container-grafico">
-      <div class="card-grafico">
-        <div id="myPlot" style="width:50%; min-width: 400px;"></div>
-        <div id="myPlot2" style="width:50%; min-width: 400px;"></div>
-      </div>
-    </div>
-    <div class="container-example">
-      <div class="card">
-        <div class="images-section">
-          <h3 class="images-title">5 EXEMPLOS QUE O ALGORITMO ACERTOU</h3>
-          <div class="images-group">
-            <div class="image-container">
-              <div class="image-box"></div>
-              <div class="legend-box">
-                <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-                <p class="legend-box-true"><strong>True: 80%</strong></p>
-              </div>
-            </div>
-            <div class="image-container">
-              <div class="image-box"></div>
-              <div class="legend-box">
-                <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-                <p class="legend-box-true"><strong>True: 80%</strong></p>
-              </div>
-            </div>
-            <div class="image-container">
-              <div class="image-box"></div>
-              <div class="legend-box">
-                <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-                <p class="legend-box-true"><strong>True: 80%</strong></p>
-              </div>
-            </div>
-            <div class="image-container">
-              <div class="image-box"></div>
-              <div class="legend-box">
-                <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-                <p class="legend-box-true"><strong>True: 80%</strong></p>
-              </div>
-            </div>
-            <div class="image-container">
-              <div class="image-box"></div>
-              <div class="legend-box">
-                <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-                <p class="legend-box-true"><strong>True: 80%</strong></p>
-              </div>
-            </div>
-          </div>
+        <div class="stat">
+          <h2>{{ acc }}</h2>
+          <p>ACURÁCIA</p>
+        </div>
+        <div class="stat">
+          <h2>{{ media }}</h2>
+          <p>ACURÁCIA MÉDIA GLOBAL</p>
         </div>
       </div>
       <br>
-      <div class="card">
-        <h3 class="images-title error">5 EXEMPLOS QUE O ALGORITMO ERROU</h3>
-        <div class="images-group">
-          <div class="image-container">
-            <div class="image-box"></div>
-            <div class="legend-box">
-              <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-              <p class="legend-box-false"><strong>True: 80%</strong></p>
-            </div>
-          </div>
-          <div class="image-container">
-            <div class="image-box"></div>
-            <div class="legend-box">
-              <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-              <p class="legend-box-false"><strong>True: 80%</strong></p>
-            </div>
-          </div>
-          <div class="image-container">
-            <div class="image-box"></div>
-            <div class="legend-box">
-              <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-              <p class="legend-box-false"><strong>True: 80%</strong></p>
-            </div>
-          </div>
-          <div class="image-container">
-            <div class="image-box"></div>
-            <div class="legend-box">
-              <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-              <p class="legend-box-false"><strong>True: 80%</strong></p>
-            </div>
-          </div>
-          <div class="image-container">
-            <div class="image-box"></div>
-            <div class="legend-box">
-              <p class="legend-box-pred"><strong>Pred: 60%</strong></p>
-              <p class="legend-box-false"><strong>True: 80%</strong></p>
-            </div>
+      <div class="history-section">
+        <div class="card">
+          <h3 class="images-title">MELHOR CONJUNTO DE HIPERPARÂMETROS</h3>
+          <div class="table-container">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>LEARNING RATE</th>
+                  <th>BATCH SIZE</th>
+                  <th>N° DE FILTROS</th>
+                  <th>CAMADAS FULL CONNECTED</th>
+                  <th>DROPOUT</th>
+                  <th>WEIGHT DECAY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Exemplo de linha -->
+                <tr>
+                  <td>{{ melhor_ind['learning_rate'] }}</td>
+                  <td>{{ melhor_ind['batch_size'] }}</td>
+                  <td>{{ melhor_ind['n_filters'] }}</td>
+                  <td>{{ melhor_ind['n_fc'] }}</td>
+                  <td>{{ melhor_ind['dropout'] }}</td>
+                  <td>{{ melhor_ind['weight_decay'] }}</td>
+                </tr>
+                <!-- Duplicar conforme necessário -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </div>
+      <div class="container-example">
+        <div class="card">
+          <div class="images-section">
+            <h3 class="images-title">EXEMPLOS QUE O ALGORITMO ACERTOU</h3>
+            <div class="images-group">
+              {% for img in acertos %}
+              <div class="image-container">
+                <img src="/assets/img/{{ img }}">
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="card">
+          <h3 class="images-title error">EXEMPLOS QUE O ALGORITMO ERROU</h3>
+          <div class="images-group">
+            {% for img in erros %}
+            <div class="image-container">
+              <img src="/assets/img/{{ img }}">
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
   </main>
   <footer>
     <figure>
@@ -185,18 +114,6 @@
         </ul>
       </nav>
     </div>
-    <h2>Resultado Final do AG</h2>
-
-    {% if mensagem %}
-      <p>{{ mensagem }}</p>
-    {% else %}
-      <p><strong>Melhor Indivíduo:</strong> {{ melhor_ind }}</p>
-      <p><strong>Acurácia:</strong> {{ acc }}</p>
-      <p><strong>Tempo Total:</strong> {{ tempo_total }} segundos</p>
-      <p><strong>Gerações:</strong> {{ num_geracoes }}</p>
-      <p><strong>População:</strong> {{ pop_size }}</p>
-      <p><strong>Taxa de Mutação:</strong> {{ mutation_rate }}</p>
-    {% endif %}
   </footer>
 
 
@@ -219,52 +136,6 @@
     });
 
   </script>
-  <script>
-    // Gráfico de linhas
-    const xArray = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150];
-    const yArray = [7, 8, 8, 9, 9, 9, 10, 11, 14, 14, 15];
-
-    const data = [{
-      x: xArray,
-      y: yArray,
-      mode: "lines",
-      line: { color: "#4d9353" }
-    }];
-
-    const layout = {
-      xaxis: { range: [40, 160], title: "Square Meters" },
-      yaxis: { range: [5, 16], title: "Price in Millions" },
-      title: "House Prices vs. Size",
-      plot_bgcolor: "#ffffff",
-      paper_bgcolor: "#ffffff",
-      font: { color: "#000000" }
-    };
-
-    Plotly.newPlot("myPlot", data, layout);
-  </script>
-
-  <script>
-    // Gráfico de pizza
-    const xArray2 = ["Italy", "France", "Spain", "USA", "Argentina"];
-    const yArray2 = [55, 49, 44, 24, 15];
-
-    const data2 = [{
-      labels: xArray2,
-      values: yArray2,
-      hole: .4,
-      type: "pie"
-    }];
-
-    const layout2 = {
-      title: "World Wide Wine Production",
-      plot_bgcolor: "#ffffff",
-      paper_bgcolor: "#ffffff",
-      font: { color: "#000000" }
-    };
-
-    Plotly.newPlot("myPlot2", data2, layout2);
-  </script>
-
   <!-- Script de alternância de tema com sessionStorage -->
   <script>
     const btn = document.getElementById('toggle-dark');

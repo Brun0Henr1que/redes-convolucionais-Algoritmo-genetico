@@ -1,3 +1,4 @@
+import os
 import torch
 from pathlib import Path
 from fastapi import FastAPI, Request, Form
@@ -6,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi import WebSocket
 from class_CNN import SmallCNN
-from main import algoritmo_genetico, load_data, plot_accuracies, plot_image_examples, show_stats
+from main import algoritmo_genetico
 
 resultado_ag = None
 
@@ -112,7 +113,7 @@ async def websocket_status(websocket: WebSocket):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print(device)
 
-        melhor_ind, acc, preds, labels, historico, tempo_total = await algoritmo_genetico(
+        melhor_ind, acc, historico, tempo_total, media_acuracias = await algoritmo_genetico(
             pop_size=pop__size,
             geracoes=generations__,
             taxa_mutacao=mutation__rate,
@@ -130,7 +131,8 @@ async def websocket_status(websocket: WebSocket):
             "historico": historico,
             "num_geracoes": generations__,
             "pop_size": pop__size,
-            "mutation_rate": mutation__rate
+            "mutation_rate": mutation__rate,
+            "media": media_acuracias
         }
 
         print(resultado_ag)
@@ -143,17 +145,22 @@ async def websocket_status(websocket: WebSocket):
 
 @app.get("/resultados", response_class=HTMLResponse)
 async def mostrar_resultados(request: Request):
+    global resultado_ag
 
     if not resultado_ag:
         mensagem = "Nenhum resultado disponível ainda."
         return templates.TemplateResponse("resultados.html", {"request": request, "mensagem": mensagem})
+    
+    pasta_imagens = Path("templates/assets/img")
+    acertos = sorted([f for f in os.listdir(pasta_imagens) if f.startswith("acerto")])
+    erros = sorted([f for f in os.listdir(pasta_imagens) if f.startswith("erro")])
 
     return templates.TemplateResponse("resultados.html", {
         "request": request,
         "melhor_ind": resultado_ag["melhor_ind"],
         "acc": resultado_ag["acc"],
         "tempo_total": resultado_ag["tempo_total"],
-        "num_geracoes": resultado_ag["num_geracoes"],
-        "pop_size": resultado_ag["pop_size"],
-        "mutation_rate": resultado_ag["mutation_rate"]
+        "media": resultado_ag["media"],
+        "acertos": acertos,
+        "erros": erros
     })
