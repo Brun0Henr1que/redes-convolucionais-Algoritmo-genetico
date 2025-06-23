@@ -309,7 +309,7 @@ async def algoritmo_genetico(pop_size=2, geracoes=3, taxa_mutacao=0, device='cpu
 # 6. Funções de Relatório e Visualização
 # ========================
 
-def salvar_image_examples(full_valset, preds, labels, true_idxs, acertos=True, n=5, output_dir="templates\\assets\\img"):
+def salvar_image_examples(full_valset, preds, labels, true_idxs, acertos=True, n=5, output_dir="templates/assets/img"):
 
     preds = np.atleast_1d(preds)
     labels = np.atleast_1d(labels)

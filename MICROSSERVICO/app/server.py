@@ -49,6 +49,9 @@ app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
 def str_para_lista(s):
     return [float(x.strip()) if '.' in x or 'e' in x.lower() else int(x.strip()) for x in s.split(',') if x.strip()]
 
+# Servir as Imagens
+app.mount("/assets", StaticFiles(directory="templates/assets"), name="assets")
+
 # Rota Get que exibe o formulário HTML
 @app.get("/", response_class=HTMLResponse)
 async def exibir_formulario(request: Request):
