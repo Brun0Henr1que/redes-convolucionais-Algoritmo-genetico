@@ -113,7 +113,7 @@
   </div>
   <footer>
     <figure>
-      <img src="/assets/img/Logo_ifpa.png" alt="">
+      <img src="/assets/img/Logo_Ifpa.png" alt="">
     </figure>
     <div class="footer-desenvolvedores">
         <nav>
@@ -241,8 +241,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     popSizeInput.addEventListener("input", function() {
         const valor = parseInt(this.value);
-        if (this.value !== "" && (isNaN(valor) || valor <= 1)) {
-            alert("O tamanho da poppulação deve ser maior que 3")
+        if (this.value !== "" && (isNaN(valor) || valor <= 2)) {
+            alert("O tamanho da população deve ser maior que 3")
             this.value = 4
         } else {
             this.style.borderColor = "";

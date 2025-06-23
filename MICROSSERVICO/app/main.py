@@ -142,8 +142,8 @@ async def avaliar_fitness(individuo, device, ws_send=None, save_preds=False):
     )
 
     # Parâmetros de treinamento
-    num_epochs = 2                 # 120 épocas de treinamento para cada indivíduo # mudar para 30 depois
-    val_interval = 1                # validar a cada 20 épocas #voltar para 3
+    num_epochs = 30                 # 30 épocas de treinamento para cada indivíduo 
+    val_interval = 5                # validar a cada 5 épocas 
     melhor_acc = 0.0
     val_acc = 0.0
     patience = 2                     # paciência de 4 validações sem melhora

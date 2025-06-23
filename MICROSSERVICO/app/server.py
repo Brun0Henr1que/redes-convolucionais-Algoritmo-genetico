@@ -14,22 +14,13 @@ resultado_ag = None
 # ========================
 # 1. Espaço de Hiperparâmetros
 # ========================
-# space={
-#         "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
-#         "batch_size": [4 , 8 , 16, 32, 64, 128],      # Tamanhos de lote variados para testar desempenho
-#         "n_filters": [4, 8, 16, 32, 64, 128],         # Número de filtros em cada camada convolucional
-#         "n_fc": [8, 16, 32, 64, 128, 256],            # Tamanhos das camadas totalmente conectadas
-#         "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
-#         "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
-# }
-
 space={
-        "learning_rate": [1e-3],          # Taxas de aprendizado comumente eficazes
-        "batch_size": [4],      # Tamanhos de lote variados para testar desempenho
-        "n_filters": [4],         # Número de filtros em cada camada convolucional
-        "n_fc": [8],            # Tamanhos das camadas totalmente conectadas
-        "dropout": [0.25],             # Taxas de dropout para regularização
-        "weight_decay": [1e-4],           # Decaimento de peso para regularização
+        "learning_rate": [1e-3, 5e-4, 1e-4],          # Taxas de aprendizado comumente eficazes
+        "batch_size": [4 , 8 , 16, 32, 64, 128],      # Tamanhos de lote variados para testar desempenho
+        "n_filters": [4, 8, 16, 32, 64, 128],         # Número de filtros em cada camada convolucional
+        "n_fc": [8, 16, 32, 64, 128, 256],            # Tamanhos das camadas totalmente conectadas
+        "dropout": [0.25, 0.3, 0.4, 0.5],             # Taxas de dropout para regularização
+        "weight_decay": [1e-4, 5e-4, 1e-3],           # Decaimento de peso para regularização
 }
 
 # Criação da aplicação FastAPI
